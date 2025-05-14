@@ -45,7 +45,7 @@ func (t *instrumentedTransport) RoundTrip(req *http.Request) (*http.Response, er
 }
 
 // InstrumentClient instruments an existing http.Client with metrics collection
-func (m *Metrics) InstrumentClient(client *http.Client) *http.Client {
+func (m *Metrics) InstrumentClient(client *http.Client) http.Client {
 	if client == nil {
 		client = &http.Client{}
 	}
@@ -60,5 +60,5 @@ func (m *Metrics) InstrumentClient(client *http.Client) *http.Client {
 		metrics: m,
 	}
 
-	return client
+	return *client
 }
