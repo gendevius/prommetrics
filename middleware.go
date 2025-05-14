@@ -97,7 +97,7 @@ func (m *Metrics) Middleware(vendor string) func(http.Handler) http.Handler {
 				if isSuccess(status) {
 					m.successRequests.With(baseLabels).Inc()
 				} else {
-					m.failedRequests.With(mergeLabels(baseLabels, "code", fmt.Sprint(rw.status))).Inc()
+					m.failedRequests.With(mergeLabels(baseLabels, labelCode, fmt.Sprint(rw.status))).Inc()
 				}
 			}()
 
