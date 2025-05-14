@@ -25,14 +25,16 @@ type Metrics struct {
 	successRequests *prometheus.CounterVec
 	failedRequests  *prometheus.CounterVec
 	requestDuration *prometheus.HistogramVec
+	vendor          string
 }
 
 // New creates a new Metrics instance with predefined metrics
-func New() *Metrics {
+func New(vendor string) *Metrics {
 	return &Metrics{
 		successRequests: createSuccessCounter(),
 		failedRequests:  createFailedCounter(),
 		requestDuration: createDurationHistogram(),
+		vendor:          vendor,
 	}
 }
 
@@ -74,7 +76,7 @@ func createDurationHistogram() *prometheus.HistogramVec {
 }
 
 // Middleware creates a wrapper for logging API request metrics
-func (m *Metrics) Middleware(vendor string) func(http.Handler) http.Handler {
+func (m *Metrics) Middleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
@@ -87,7 +89,7 @@ func (m *Metrics) Middleware(vendor string) func(http.Handler) http.Handler {
 				status := rw.status
 
 				baseLabels := prometheus.Labels{
-					labelVendor:   vendor,
+					labelVendor:   m.vendor,
 					labelEndpoint: endpoint,
 					labelMethod:   method,
 				}

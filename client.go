@@ -21,6 +21,7 @@ func (t *instrumentedTransport) RoundTrip(req *http.Request) (*http.Response, er
 	method := req.Method
 
 	baseLabels := prometheus.Labels{
+		labelVendor:   t.metrics.vendor,
 		labelEndpoint: endpoint,
 		labelMethod:   method,
 	}
