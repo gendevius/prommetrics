@@ -17,30 +17,34 @@ type instrumentedTransport struct {
 // RoundTrip implements http.RoundTripper interface
 func (t *instrumentedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	start := time.Now()
-	endpoint := extractEndpoint(req.URL.Path)
-	method := req.Method
-
-	baseLabels := prometheus.Labels{
-		labelVendor:   t.metrics.vendor,
-		labelEndpoint: endpoint,
-		labelMethod:   method,
-	}
 
 	resp, err := t.next.RoundTrip(req)
-	duration := time.Since(start).Seconds()
-
-	t.metrics.requestDuration.With(baseLabels).Observe(duration)
-
 	if err != nil {
-		t.metrics.failedRequests.With(mergeLabels(baseLabels, labelCode, resp.Status)).Inc()
 		return nil, err
 	}
+	defer func() {
+		duration := time.Since(start).Seconds()
+		endpoint := extractEndpoint(req.URL.Path)
+		method := req.Method
 
-	if isSuccess(resp.StatusCode) {
-		t.metrics.successRequests.With(baseLabels).Inc()
-	} else {
-		t.metrics.failedRequests.With(mergeLabels(baseLabels, labelCode, fmt.Sprint(resp.StatusCode))).Inc()
-	}
+		baseLabels := prometheus.Labels{
+			labelVendor:   t.metrics.vendor,
+			labelEndpoint: endpoint,
+			labelMethod:   method,
+		}
+
+		t.metrics.requestDuration.With(baseLabels).Observe(duration)
+
+		if err != nil {
+			t.metrics.failedRequests.With(mergeLabels(baseLabels, labelCode, resp.Status)).Inc()
+		}
+
+		if isSuccess(resp.StatusCode) {
+			t.metrics.successRequests.With(baseLabels).Inc()
+		} else {
+			t.metrics.failedRequests.With(mergeLabels(baseLabels, labelCode, fmt.Sprint(resp.StatusCode))).Inc()
+		}
+	}()
 
 	return resp, nil
 }
