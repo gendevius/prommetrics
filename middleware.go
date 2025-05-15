@@ -17,7 +17,7 @@ func (m *Metrics) Middleware() func(http.Handler) http.Handler {
 
 			defer func() {
 				duration := time.Since(start).Seconds()
-				endpoint := extractEndpoint(r.URL.Path)
+				endpoint := extractEndpoint(r.RequestURI)
 				method := r.Method
 				status := rw.status
 
