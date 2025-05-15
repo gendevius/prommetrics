@@ -28,15 +28,14 @@ func TestInstrumentedTransport(t *testing.T) {
 	metrics := NewTestMetrics()
 
 	tests := []struct {
-		name             string
-		mockResp         *http.Response
-		mockErr          error
-		request          *http.Request
-		wantStatus       int
-		wantSuccess      float64
-		wantFailed       float64
-		wantLabels       prometheus.Labels
-		wantFailedLabels prometheus.Labels
+		name        string
+		mockResp    *http.Response
+		mockErr     error
+		request     *http.Request
+		wantStatus  int
+		wantSuccess float64
+		wantFailed  float64
+		wantLabels  prometheus.Labels
 	}{
 		{
 			name:        "successful GET request",
@@ -47,10 +46,10 @@ func TestInstrumentedTransport(t *testing.T) {
 			wantFailed:  0,
 			wantLabels: prometheus.Labels{
 				labelVendor:   "test-vendor",
-				labelEndpoint: "users",
+				labelEndpoint: "http://api.example.com/users",
 				labelMethod:   "GET",
+				labelCode:     "200",
 			},
-			wantFailedLabels: nil,
 		},
 		{
 			name:        "failed POST request (500)",
@@ -61,12 +60,7 @@ func TestInstrumentedTransport(t *testing.T) {
 			wantFailed:  1,
 			wantLabels: prometheus.Labels{
 				labelVendor:   "test-vendor",
-				labelEndpoint: "error",
-				labelMethod:   "POST",
-			},
-			wantFailedLabels: prometheus.Labels{
-				labelVendor:   "test-vendor",
-				labelEndpoint: "error",
+				labelEndpoint: "http://api.example.com/error",
 				labelMethod:   "POST",
 				labelCode:     "500",
 			},
@@ -93,7 +87,7 @@ func TestInstrumentedTransport(t *testing.T) {
 			}
 
 			if tt.wantFailed > 0 {
-				val := testutil.ToFloat64(metrics.failedRequests.With(tt.wantFailedLabels))
+				val := testutil.ToFloat64(metrics.failedRequests.With(tt.wantLabels))
 				assert.Equal(t, tt.wantFailed, val)
 			}
 
@@ -134,7 +128,7 @@ func NewTestMetrics() *Metrics {
 			Name:      "success_total",
 			Help:      "Total number of successful vendor API requests",
 		},
-			[]string{labelVendor, labelEndpoint, labelMethod}),
+			[]string{labelVendor, labelEndpoint, labelMethod, labelCode}),
 		failedRequests: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Namespace: namespace,
@@ -151,7 +145,7 @@ func NewTestMetrics() *Metrics {
 				Help:      "Duration of vendor API requests",
 				Buckets:   prometheus.DefBuckets,
 			},
-			[]string{labelVendor, labelEndpoint, labelMethod}),
+			[]string{labelVendor, labelEndpoint, labelMethod, labelCode}),
 		vendor: "test-vendor",
 	}
 

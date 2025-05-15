@@ -104,32 +104,32 @@ func TestExtractEndpoint(t *testing.T) {
 		{
 			name: "root path",
 			path: "/",
-			want: "root",
+			want: "/",
 		},
 		{
 			name: "simple path",
 			path: "/api/test",
-			want: "test",
+			want: "api/test",
 		},
 		{
 			name: "nested path",
 			path: "/api/v1/users",
-			want: "users",
+			want: "api/v1/users",
 		},
 		{
 			name: "path with trailing slash",
 			path: "/api/v1/users/",
-			want: "users",
+			want: "api/v1/users",
 		},
 		{
 			name: "empty path",
 			path: "",
-			want: "root",
+			want: "/",
 		},
 		{
 			name: "long path",
 			path: "/very/long/path/to/resource",
-			want: "resource",
+			want: "very/long/path/to/resource",
 		},
 	}
 

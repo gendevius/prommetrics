@@ -16,14 +16,13 @@ func TestMiddleware(t *testing.T) {
 	metrics := NewTestMetrics()
 
 	tests := []struct {
-		name             string
-		handler          http.HandlerFunc
-		request          *http.Request
-		wantStatus       int
-		wantSuccess      float64
-		wantFailed       float64
-		wantLabels       prometheus.Labels
-		wantFailedLabels prometheus.Labels
+		name        string
+		handler     http.HandlerFunc
+		request     *http.Request
+		wantStatus  int
+		wantSuccess float64
+		wantFailed  float64
+		wantLabels  prometheus.Labels
 	}{
 		{
 			name: "successful GET request",
@@ -36,8 +35,9 @@ func TestMiddleware(t *testing.T) {
 			wantFailed:  0,
 			wantLabels: prometheus.Labels{
 				labelVendor:   "test-vendor",
-				labelEndpoint: "users",
+				labelEndpoint: "api/users",
 				labelMethod:   "GET",
+				labelCode:     "200",
 			},
 		},
 		{
@@ -51,8 +51,9 @@ func TestMiddleware(t *testing.T) {
 			wantFailed:  0,
 			wantLabels: prometheus.Labels{
 				labelVendor:   "test-vendor",
-				labelEndpoint: "products",
+				labelEndpoint: "api/products",
 				labelMethod:   "POST",
+				labelCode:     "201",
 			},
 		},
 		{
@@ -66,12 +67,7 @@ func TestMiddleware(t *testing.T) {
 			wantFailed:  1,
 			wantLabels: prometheus.Labels{
 				labelVendor:   "test-vendor",
-				labelEndpoint: "error",
-				labelMethod:   "GET",
-			},
-			wantFailedLabels: prometheus.Labels{
-				labelVendor:   "test-vendor",
-				labelEndpoint: "error",
+				labelEndpoint: "api/error",
 				labelMethod:   "GET",
 				labelCode:     "500",
 			},
@@ -87,12 +83,7 @@ func TestMiddleware(t *testing.T) {
 			wantFailed:  1,
 			wantLabels: prometheus.Labels{
 				labelVendor:   "test-vendor",
-				labelEndpoint: "notfound",
-				labelMethod:   "GET",
-			},
-			wantFailedLabels: prometheus.Labels{
-				labelVendor:   "test-vendor",
-				labelEndpoint: "notfound",
+				labelEndpoint: "api/notfound",
 				labelMethod:   "GET",
 				labelCode:     "404",
 			},
@@ -108,8 +99,9 @@ func TestMiddleware(t *testing.T) {
 			wantFailed:  0,
 			wantLabels: prometheus.Labels{
 				labelVendor:   "test-vendor",
-				labelEndpoint: "root",
+				labelEndpoint: "/",
 				labelMethod:   "GET",
+				labelCode:     "200",
 			},
 		},
 		{
@@ -123,8 +115,9 @@ func TestMiddleware(t *testing.T) {
 			wantFailed:  0,
 			wantLabels: prometheus.Labels{
 				labelVendor:   "test-vendor",
-				labelEndpoint: "profile",
+				labelEndpoint: "api/v1/users/id/profile",
 				labelMethod:   "GET",
+				labelCode:     "200",
 			},
 		},
 	}
@@ -149,7 +142,7 @@ func TestMiddleware(t *testing.T) {
 			}
 
 			if tt.wantFailed > 0 {
-				val := testutil.ToFloat64(metrics.failedRequests.With(tt.wantFailedLabels))
+				val := testutil.ToFloat64(metrics.failedRequests.With(tt.wantLabels))
 				if val != tt.wantFailed {
 					t.Errorf("wrong failed count: got %v want %v", val, tt.wantFailed)
 				}

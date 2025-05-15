@@ -43,7 +43,7 @@ func createSuccessCounter() *prometheus.CounterVec {
 			Name:      "success_total",
 			Help:      "Total number of successful vendor API requests",
 		},
-		[]string{labelVendor, labelEndpoint, labelMethod},
+		[]string{labelVendor, labelEndpoint, labelMethod, labelCode},
 	)
 }
 
@@ -68,7 +68,7 @@ func createDurationHistogram() *prometheus.HistogramVec {
 			Help:      "Duration of vendor API requests",
 			Buckets:   prometheus.DefBuckets,
 		},
-		[]string{labelVendor, labelEndpoint, labelMethod},
+		[]string{labelVendor, labelEndpoint, labelMethod, labelCode},
 	)
 }
 

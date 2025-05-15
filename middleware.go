@@ -27,10 +27,10 @@ func (m *Metrics) Middleware() func(http.Handler) http.Handler {
 					labelMethod:   method,
 				}
 
-				m.requestDuration.With(baseLabels).Observe(duration)
+				m.requestDuration.With(mergeLabels(baseLabels, labelCode, fmt.Sprint(rw.status))).Observe(duration)
 
 				if isSuccess(status) {
-					m.successRequests.With(baseLabels).Inc()
+					m.successRequests.With(mergeLabels(baseLabels, labelCode, fmt.Sprint(rw.status))).Inc()
 				} else {
 					m.failedRequests.With(mergeLabels(baseLabels, labelCode, fmt.Sprint(rw.status))).Inc()
 				}

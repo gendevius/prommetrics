@@ -2,8 +2,10 @@ package prommetrics
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
+	"github.com/gofrs/uuid/v5"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -23,16 +25,39 @@ func mergeLabels(base prometheus.Labels, key, value string) prometheus.Labels {
 func extractEndpoint(path string) string {
 	cleanPath := strings.Trim(path, "/")
 	if cleanPath == "" {
-		return "root"
+		return "/"
 	}
 
+	var builder strings.Builder
 	parts := strings.Split(cleanPath, "/")
-	lastPart := parts[len(parts)-1]
 
-	if lastPart == "" && len(parts) > 1 {
-		return parts[len(parts)-2]
+	for i, part := range parts {
+		if isID(part) {
+			builder.WriteString("id")
+		} else {
+			builder.WriteString(part)
+		}
+
+		if i < len(parts)-1 {
+			builder.WriteString("/")
+		}
 	}
-	return lastPart
+
+	return builder.String()
+}
+
+func isID(s string) bool {
+	return isUuid(s) || isInt(s)
+}
+
+func isUuid(s string) bool {
+	_, err := uuid.FromString(s)
+	return err == nil
+}
+
+func isInt(s string) bool {
+	_, err := strconv.Atoi(s)
+	return err == nil
 }
 
 func newResponseRecorder(w http.ResponseWriter) *responseRecorder {
