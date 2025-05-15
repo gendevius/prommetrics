@@ -8,7 +8,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// instrumentedTransport wraps an http.RoundTripper with metrics collection
+// instrumentedTransport wraps a http.RoundTripper with metrics collection
 type instrumentedTransport struct {
 	next    http.RoundTripper
 	metrics *Metrics
