@@ -17,7 +17,7 @@ type instrumentedTransport struct {
 // RoundTrip implements http.RoundTripper interface
 func (t *instrumentedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	start := time.Now()
-	endpoint := extractEndpoint(req.RequestURI)
+	endpoint := extractEndpoint(req.URL.String())
 	method := req.Method
 
 	baseLabels := prometheus.Labels{
