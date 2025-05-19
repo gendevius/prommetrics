@@ -27,17 +27,30 @@ func (m *Metrics) Middleware() func(http.Handler) http.Handler {
 					labelMethod:   method,
 				}
 
-				m.requestDuration.With(mergeLabels(baseLabels, labelCode, fmt.Sprint(rw.status))).Observe(duration)
+				m.requestDuration.With(addLabel(baseLabels, labelCode, fmt.Sprint(rw.status))).Observe(duration)
 
-				if isSuccess(status) {
-					m.successRequests.With(mergeLabels(baseLabels, labelCode, fmt.Sprint(rw.status))).Inc()
-				} else {
-					m.failedRequests.With(mergeLabels(baseLabels, labelCode, fmt.Sprint(rw.status))).Inc()
+				if isSuccessStatus(status) {
+					m.successRequests.With(addLabel(baseLabels, labelCode, fmt.Sprint(rw.status))).Inc()
+					return
 				}
+				m.failedRequests.With(addLabel(baseLabels, labelCode, fmt.Sprint(rw.status))).Inc()
+
 			}()
 
 			next.ServeHTTP(rw, r)
 		})
+	}
+}
+
+type responseRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func newResponseRecorder(w http.ResponseWriter) *responseRecorder {
+	return &responseRecorder{
+		ResponseWriter: w,
+		status:         http.StatusOK,
 	}
 }
 

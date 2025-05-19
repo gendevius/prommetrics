@@ -115,7 +115,7 @@ func TestMiddleware(t *testing.T) {
 			wantFailed:  0,
 			wantLabels: prometheus.Labels{
 				labelVendor:   "test-vendor",
-				labelEndpoint: "api/v1/users/id/profile",
+				labelEndpoint: "api/v1/users/<int>/profile",
 				labelMethod:   "GET",
 				labelCode:     "200",
 			},

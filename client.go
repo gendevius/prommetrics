@@ -28,19 +28,23 @@ func (t *instrumentedTransport) RoundTrip(req *http.Request) (*http.Response, er
 
 	resp, err := t.next.RoundTrip(req)
 	if err != nil {
-		t.metrics.failedRequests.With(mergeLabels(baseLabels, labelCode, fmt.Sprint(http.StatusInternalServerError))).Inc()
+		if resp.StatusCode != 0 {
+			t.metrics.failedRequests.With(addLabel(baseLabels, labelCode, fmt.Sprint(resp.StatusCode))).Inc()
+			return nil, err
+		}
+		t.metrics.failedRequests.With(addLabel(baseLabels, labelCode, fmt.Sprint(http.StatusInternalServerError))).Inc()
 		return nil, err
 	}
 	defer func() {
 		duration := time.Since(start).Seconds()
 
-		t.metrics.requestDuration.With(mergeLabels(baseLabels, labelCode, fmt.Sprint(resp.StatusCode))).Observe(duration)
+		t.metrics.requestDuration.With(addLabel(baseLabels, labelCode, fmt.Sprint(resp.StatusCode))).Observe(duration)
 
-		if isSuccess(resp.StatusCode) {
-			t.metrics.successRequests.With(mergeLabels(baseLabels, labelCode, fmt.Sprint(resp.StatusCode))).Inc()
-		} else {
-			t.metrics.failedRequests.With(mergeLabels(baseLabels, labelCode, fmt.Sprint(resp.StatusCode))).Inc()
+		if isSuccessStatus(resp.StatusCode) {
+			t.metrics.successRequests.With(addLabel(baseLabels, labelCode, fmt.Sprint(resp.StatusCode))).Inc()
+			return
 		}
+		t.metrics.failedRequests.With(addLabel(baseLabels, labelCode, fmt.Sprint(resp.StatusCode))).Inc()
 	}()
 
 	return resp, nil

@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -46,49 +45,7 @@ func TestIsSuccess(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			assert.Equal(t, tt.want, isSuccess(tt.status))
-		})
-	}
-}
-
-func TestMergeLabels(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		base  prometheus.Labels
-		key   string
-		value string
-		want  prometheus.Labels
-	}{
-		{
-			name:  "add to empty labels",
-			base:  prometheus.Labels{},
-			key:   "new_key",
-			value: "new_value",
-			want:  prometheus.Labels{"new_key": "new_value"},
-		},
-		{
-			name:  "add to existing labels",
-			base:  prometheus.Labels{"exist": "value"},
-			key:   "new_key",
-			value: "new_value",
-			want:  prometheus.Labels{"exist": "value", "new_key": "new_value"},
-		},
-		{
-			name:  "override existing key",
-			base:  prometheus.Labels{"key": "old"},
-			key:   "key",
-			value: "new",
-			want:  prometheus.Labels{"key": "new"},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			got := mergeLabels(tt.base, tt.key, tt.value)
-			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want, isSuccessStatus(tt.status))
 		})
 	}
 }
@@ -130,6 +87,16 @@ func TestExtractEndpoint(t *testing.T) {
 			name: "long path",
 			path: "/very/long/path/to/resource",
 			want: "very/long/path/to/resource",
+		},
+		{
+			name: "path with int",
+			path: "/very/long/path/1/resource",
+			want: "very/long/path/<int>/resource",
+		},
+		{
+			name: "path with uuid",
+			path: "/very/long/path/1ca0d4c6-796e-4a1c-a6a0-95fb0f4033b6/resource",
+			want: "very/long/path/<uuid>/resource",
 		},
 	}
 

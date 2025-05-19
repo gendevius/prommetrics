@@ -1,8 +1,6 @@
 package prommetrics
 
 import (
-	"net/http"
-
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -72,7 +70,11 @@ func createDurationHistogram() *prometheus.HistogramVec {
 	)
 }
 
-type responseRecorder struct {
-	http.ResponseWriter
-	status int
+func addLabel(base prometheus.Labels, key, value string) prometheus.Labels {
+	newLabels := make(prometheus.Labels, len(base)+1)
+	for k, v := range base {
+		newLabels[k] = v
+	}
+	newLabels[key] = value
+	return newLabels
 }
