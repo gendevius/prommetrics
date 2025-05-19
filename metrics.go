@@ -7,7 +7,6 @@ import (
 
 const (
 	namespace = "vendor_api"
-	subsystem = "requests"
 
 	labelVendor   = "vendor"
 	labelEndpoint = "endpoint"
@@ -26,18 +25,18 @@ type Metrics struct {
 // New creates a new Metrics instance with predefined metrics
 func New(vendor string) *Metrics {
 	return &Metrics{
-		successRequests: createSuccessCounter(),
-		failedRequests:  createFailedCounter(),
-		requestDuration: createDurationHistogram(),
+		successRequests: createSuccessCounter(vendor),
+		failedRequests:  createFailedCounter(vendor),
+		requestDuration: createDurationHistogram(vendor),
 		vendor:          vendor,
 	}
 }
 
-func createSuccessCounter() *prometheus.CounterVec {
+func createSuccessCounter(vendor string) *prometheus.CounterVec {
 	return promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: namespace,
-			Subsystem: subsystem,
+			Subsystem: vendor,
 			Name:      "success_total",
 			Help:      "Total number of successful vendor API requests",
 		},
@@ -45,11 +44,11 @@ func createSuccessCounter() *prometheus.CounterVec {
 	)
 }
 
-func createFailedCounter() *prometheus.CounterVec {
+func createFailedCounter(vendor string) *prometheus.CounterVec {
 	return promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: namespace,
-			Subsystem: subsystem,
+			Subsystem: vendor,
 			Name:      "failed_total",
 			Help:      "Total number of failed vendor API requests",
 		},
@@ -57,11 +56,11 @@ func createFailedCounter() *prometheus.CounterVec {
 	)
 }
 
-func createDurationHistogram() *prometheus.HistogramVec {
+func createDurationHistogram(vendor string) *prometheus.HistogramVec {
 	return promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Namespace: namespace,
-			Subsystem: subsystem,
+			Subsystem: vendor,
 			Name:      "duration_seconds",
 			Help:      "Duration of vendor API requests",
 			Buckets:   prometheus.DefBuckets,

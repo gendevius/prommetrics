@@ -13,7 +13,7 @@ import (
 func TestMiddleware(t *testing.T) {
 	t.Parallel()
 
-	metrics := NewTestMetrics()
+	metrics := New("test-middleware")
 
 	tests := []struct {
 		name        string
@@ -34,7 +34,7 @@ func TestMiddleware(t *testing.T) {
 			wantSuccess: 1,
 			wantFailed:  0,
 			wantLabels: prometheus.Labels{
-				labelVendor:   "test-vendor",
+				labelVendor:   "test-middleware",
 				labelEndpoint: "api/users",
 				labelMethod:   "GET",
 				labelCode:     "200",
@@ -50,7 +50,7 @@ func TestMiddleware(t *testing.T) {
 			wantSuccess: 1,
 			wantFailed:  0,
 			wantLabels: prometheus.Labels{
-				labelVendor:   "test-vendor",
+				labelVendor:   "test-middleware",
 				labelEndpoint: "api/products",
 				labelMethod:   "POST",
 				labelCode:     "201",
@@ -66,7 +66,7 @@ func TestMiddleware(t *testing.T) {
 			wantSuccess: 0,
 			wantFailed:  1,
 			wantLabels: prometheus.Labels{
-				labelVendor:   "test-vendor",
+				labelVendor:   "test-middleware",
 				labelEndpoint: "api/error",
 				labelMethod:   "GET",
 				labelCode:     "500",
@@ -82,7 +82,7 @@ func TestMiddleware(t *testing.T) {
 			wantSuccess: 0,
 			wantFailed:  1,
 			wantLabels: prometheus.Labels{
-				labelVendor:   "test-vendor",
+				labelVendor:   "test-middleware",
 				labelEndpoint: "api/notfound",
 				labelMethod:   "GET",
 				labelCode:     "404",
@@ -98,7 +98,7 @@ func TestMiddleware(t *testing.T) {
 			wantSuccess: 1,
 			wantFailed:  0,
 			wantLabels: prometheus.Labels{
-				labelVendor:   "test-vendor",
+				labelVendor:   "test-middleware",
 				labelEndpoint: "/",
 				labelMethod:   "GET",
 				labelCode:     "200",
@@ -114,7 +114,7 @@ func TestMiddleware(t *testing.T) {
 			wantSuccess: 1,
 			wantFailed:  0,
 			wantLabels: prometheus.Labels{
-				labelVendor:   "test-vendor",
+				labelVendor:   "test-middleware",
 				labelEndpoint: "api/v1/users/<int>/profile",
 				labelMethod:   "GET",
 				labelCode:     "200",

@@ -25,7 +25,7 @@ func (m *mockRoundTripper) RoundTrip(*http.Request) (*http.Response, error) {
 func TestInstrumentedTransport(t *testing.T) {
 	t.Parallel()
 
-	metrics := NewTestMetrics()
+	metrics := New("test-transport")
 
 	tests := []struct {
 		name        string
@@ -45,7 +45,7 @@ func TestInstrumentedTransport(t *testing.T) {
 			wantSuccess: 1,
 			wantFailed:  0,
 			wantLabels: prometheus.Labels{
-				labelVendor:   "test-vendor",
+				labelVendor:   "test-transport",
 				labelEndpoint: "http://api.example.com/users",
 				labelMethod:   "GET",
 				labelCode:     "200",
@@ -59,7 +59,7 @@ func TestInstrumentedTransport(t *testing.T) {
 			wantSuccess: 0,
 			wantFailed:  1,
 			wantLabels: prometheus.Labels{
-				labelVendor:   "test-vendor",
+				labelVendor:   "test-transport",
 				labelEndpoint: "http://api.example.com/error",
 				labelMethod:   "POST",
 				labelCode:     "500",
@@ -101,7 +101,7 @@ func TestInstrumentedTransport(t *testing.T) {
 }
 
 func TestInstrumentClient_Wrapping(t *testing.T) {
-	metrics := NewTestMetrics()
+	metrics := New("test-wrapping")
 	client := &http.Client{Transport: http.DefaultTransport}
 
 	instrumented := metrics.InstrumentClient(client)
@@ -113,49 +113,49 @@ func TestInstrumentClient_Wrapping(t *testing.T) {
 }
 
 func TestInstrumentClient_NilTransport(t *testing.T) {
-	metrics := NewTestMetrics()
+	metrics := New("test-nill-transport")
 	client := &http.Client{Transport: nil}
 
 	instrumented := metrics.InstrumentClient(client)
 	assert.NotNil(t, instrumented.Transport)
 }
 
-func NewTestMetrics() *Metrics {
-	metrics := &Metrics{
-		successRequests: prometheus.NewCounterVec(prometheus.CounterOpts{
-			Namespace: namespace,
-			Subsystem: subsystem,
-			Name:      "success_total",
-			Help:      "Total number of successful vendor API requests",
-		},
-			[]string{labelVendor, labelEndpoint, labelMethod, labelCode}),
-		failedRequests: prometheus.NewCounterVec(
-			prometheus.CounterOpts{
-				Namespace: namespace,
-				Subsystem: subsystem,
-				Name:      "failed_total",
-				Help:      "Total number of failed vendor API requests",
-			},
-			[]string{labelVendor, labelEndpoint, labelMethod, labelCode}),
-		requestDuration: prometheus.NewHistogramVec(
-			prometheus.HistogramOpts{
-				Namespace: namespace,
-				Subsystem: subsystem,
-				Name:      "duration_seconds",
-				Help:      "Duration of vendor API requests",
-				Buckets:   prometheus.DefBuckets,
-			},
-			[]string{labelVendor, labelEndpoint, labelMethod, labelCode}),
-		vendor: "test-vendor",
-	}
-
-	registry := prometheus.NewRegistry()
-	registry.MustRegister(metrics.failedRequests, metrics.successRequests, metrics.requestDuration)
-
-	return &Metrics{
-		successRequests: metrics.successRequests,
-		failedRequests:  metrics.failedRequests,
-		requestDuration: metrics.requestDuration,
-		vendor:          metrics.vendor,
-	}
-}
+//func NewTestMetrics() *Metrics {
+//	metrics := &Metrics{
+//		successRequests: prometheus.NewCounterVec(prometheus.CounterOpts{
+//			Namespace: namespace,
+//			Subsystem: subsystem,
+//			Name:      "success_total",
+//			Help:      "Total number of successful vendor API requests",
+//		},
+//			[]string{labelVendor, labelEndpoint, labelMethod, labelCode}),
+//		failedRequests: prometheus.NewCounterVec(
+//			prometheus.CounterOpts{
+//				Namespace: namespace,
+//				Subsystem: subsystem,
+//				Name:      "failed_total",
+//				Help:      "Total number of failed vendor API requests",
+//			},
+//			[]string{labelVendor, labelEndpoint, labelMethod, labelCode}),
+//		requestDuration: prometheus.NewHistogramVec(
+//			prometheus.HistogramOpts{
+//				Namespace: namespace,
+//				Subsystem: subsystem,
+//				Name:      "duration_seconds",
+//				Help:      "Duration of vendor API requests",
+//				Buckets:   prometheus.DefBuckets,
+//			},
+//			[]string{labelVendor, labelEndpoint, labelMethod, labelCode}),
+//		vendor: "test-vendor",
+//	}
+//
+//	registry := prometheus.NewRegistry()
+//	registry.MustRegister(metrics.failedRequests, metrics.successRequests, metrics.requestDuration)
+//
+//	return &Metrics{
+//		successRequests: metrics.successRequests,
+//		failedRequests:  metrics.failedRequests,
+//		requestDuration: metrics.requestDuration,
+//		vendor:          metrics.vendor,
+//	}
+//}
